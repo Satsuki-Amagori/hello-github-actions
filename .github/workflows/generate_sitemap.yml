@@ -1,0 +1,29 @@
+name: Generate Sitemap
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * *" # 毎日0時に更新
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate sitemap.json
+        run: |
+          echo "[" > sitemap.json
+          find pages -name "*.html" | sed 's/^/"/;s/$/",/' >> sitemap.json
+          echo "]" >> sitemap.json
+
+      - name: Commit and push sitemap.json
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add sitemap.json
+          git commit -m "Update sitemap.json" || exit 0
+          git push
